@@ -56,7 +56,14 @@ $esignApi = new Api();
 
 <head>
     <title><?php echo text($openemr_name); ?></title>
-
+    <?php
+    echo '<button onclick="openNewWindow()">Open Tortus EHR</button>';
+    echo '<script>
+            function openNewWindow() {
+                window.open("tortus.php", "_blank");
+            }
+        </script>';
+    ?>
     <script>
         // This is to prevent users from losing data by refreshing or backing out of OpenEMR.
         //  (default behavior, however, this behavior can be turned off in the prevent_browser_refresh global)

@@ -12,7 +12,7 @@
 
 // comment below exit command to run this test script
 //  (when done, remember to uncomment it again)
-exit;
+//exit;
 
 require_once(__DIR__ . "/../../interface/globals.php");
 
@@ -25,6 +25,7 @@ use OpenEMR\Core\Header;
     <?php Header::setupAssets('jquery'); ?>
 
     <script>
+        console.log('hello');
         function testAjaxApi() {
             $.ajax({
                 type: 'GET',
@@ -100,6 +101,39 @@ $restRequest->setApiType("oemr");
 // below will return as json
 echo "<b>api via route handler call returning json:</b><br />";
 echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');
+echo "<br /><br />";
+
+// CALL the api via route handler for api/patient to get list of encounters
+$restRequest->setRequestPath("/api/patient");
+// below will return as json
+echo "<b>api via route handler call to api/patient returning json:</b><br />";
+echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');
+echo "<br /><br />";
+
+// CALL the api via route handler for api/patient/encounter to get encounter id
+$restRequest->setRequestPath("/api/patient/9b7e3d50-26c2-4e40-9af3-7784ca46546c/encounter");
+// below will return as json
+echo "<b>api via route handler call to get encounter id returning json:</b><br />";
+echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');
+echo "<br /><br />";
+
+// CALL the api via route handler for api/patient/encounter/{euuid} to retrieve encounter
+$restRequest->setRequestPath("/api/patient/9b7e3d50-26c2-4e40-9af3-7784ca46546c/encounter/9b7e404a-9ddd-4647-8bd8-607fdb56fcfe");
+// below will return as json
+echo "<b>api via route handler call to retrieve specific encounter returning json:</b><br />";
+echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');
+echo "<br /><br />";
+
+// CALL the api via route handler for /api/patient/{pid}/encounter/{eid}/soap_note to retrieve soap note
+$restRequest->setRequestPath("/api/patient/1/encounter/3/soap_note");
+// below will return as json
+echo "<b>api via route handler call to retrieve soap note:</b><br />";
+echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');
+echo "<br /><br />";
+
+// below will return as php array
+echo "<b>api via route handler call to api/patient returning php array:</b><br />";
+echo print_r(HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct'));
 echo "<br /><br />";
 
 // below will return as php array

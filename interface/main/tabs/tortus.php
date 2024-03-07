@@ -49,7 +49,7 @@
 </head>
 <body>
     <div id="chat-container">
-        <div id="chat-header">Chat</div>
+        <div id="chat-header">Chatino</div>
         <div id="chat-box"></div>
         <div id="chat-input">
             <input type="text" id="message" placeholder="Type a message..." />
@@ -59,10 +59,27 @@
 
     <script>
         function submitMessage() {
+            console.log("submitMessage");
             var message = document.getElementById("message").value;
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML += "<p><strong>You:</strong> " + message + "</p>";
             document.getElementById("message").value = "";
+
+            // Make the API request
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "getNote.php", true);
+            xhr.onreadystatechange = function () {
+                console.log(data);
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log(xhr.responseText);
+                    var data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    // Display the API response in the chat interface
+                    chatBox.innerHTML += "<p><strong>Reply:</strong> " + JSON.stringify(data, null, 2) + "</p>";
+                }
+            }
+            xhr.send();
+
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>

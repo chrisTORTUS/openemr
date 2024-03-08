@@ -23,7 +23,7 @@ $gbl = RestConfig::GetInstance();
 $gbl::setNotRestCall();
 $restRequest = new HttpRestRequest($gbl, $_SERVER);
 $restRequest->setRequestMethod("GET");
-$restRequest->setRequestPath("/api/facility");
+$restRequest->setRequestPath("/api/patient");
 $restRequest->setIsLocalApi(true);
 $restRequest->setApiType("oemr");
 // below will return as json

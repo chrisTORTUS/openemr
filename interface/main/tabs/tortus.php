@@ -49,7 +49,7 @@
 </head>
 <body>
     <div id="chat-container">
-        <div id="chat-header">Chatino</div>
+        <div id="chat-header">Tortus EHR</div>
         <div id="chat-box"></div>
         <div id="chat-input">
             <input type="text" id="message" placeholder="Type a message..." />

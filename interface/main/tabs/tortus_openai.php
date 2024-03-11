@@ -1,3 +1,17 @@
+<?php
+require __DIR__ . "/../../../vendor/autoload.php";
+
+// try {
+//     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../../../");
+//     $dotenv->load();
+// } catch (Exception $e) {
+//     echo 'Caught exception: ',  $e->getMessage(), "\n";
+// }
+
+// $env_var = 'OPENAI_API_KEY';
+
+// echo 'hello :' .$_ENV['OPENAI_API_KEY'];
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -128,7 +142,7 @@
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "https://api.openai.com/v1/chat/completions", true);
             xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("Authorization", "Bearer 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");
+            xhr.setRequestHeader("Authorization", "Bearer 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");
             var data = {
                 "messages": messages, // Send the entire messages array
                 "model": "gpt-3.5-turbo-0125",

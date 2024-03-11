@@ -1,16 +1,19 @@
 <?php
 require __DIR__ . "/../../../vendor/autoload.php";
 
-// try {
-//     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../../../");
-//     $dotenv->load();
-// } catch (Exception $e) {
-//     echo 'Caught exception: ',  $e->getMessage(), "\n";
-// }
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../../../");
+    $dotenv->load();
+} catch (Exception $e) {
+    echo 'Caught exception: ',  $e->getMessage(), "\n";
+}
 
-// $env_var = 'OPENAI_API_KEY';
+$env_var = 'OPENAI_API_KEY';
 
-// echo 'hello :' .$_ENV['OPENAI_API_KEY'];
+echo 'hello :' .$_ENV['OPENAI_API_KEY'];
+?>
+<?php
+echo 'hello :' .$_ENV['OPENAI_API_KEY'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -127,6 +130,8 @@ require __DIR__ . "/../../../vendor/autoload.php";
         });
 
         function submitMessage() {
+            var apiKey = "<?php echo $_ENV['OPENAI_API_KEY']; ?>";
+            console.log(apiKey);
             var message = document.getElementById("message").value;
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML += "<p><strong>You:</strong> " + message + "</p>";
@@ -142,7 +147,7 @@ require __DIR__ . "/../../../vendor/autoload.php";
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "https://api.openai.com/v1/chat/completions", true);
             xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("Authorization", "Bearer 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");
+            xhr.setRequestHeader("Authorization", "Bearer " + apiKey);
             var data = {
                 "messages": messages, // Send the entire messages array
                 "model": "gpt-3.5-turbo-0125",

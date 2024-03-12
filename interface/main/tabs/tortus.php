@@ -67,7 +67,7 @@
 
             // Make the API request
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", "getNote.php", true);
+            xhr.open("GET", "get_soap.php", true);
             xhr.onreadystatechange = function () {
                 console.log(data);
                 if (xhr.readyState == 4 && xhr.status == 200) {

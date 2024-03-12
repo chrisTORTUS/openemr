@@ -8,6 +8,8 @@ if (file_exists($file_path)) {
     //echo "File does not exist: $file_path";
     exit;
 }
+// echo $_GET['uuid'];
+$uuid = $_GET['uuid'];
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -23,7 +25,7 @@ $gbl = RestConfig::GetInstance();
 $gbl::setNotRestCall();
 $restRequest = new HttpRestRequest($gbl, $_SERVER);
 $restRequest->setRequestMethod("GET");
-$restRequest->setRequestPath("/api/patient");
+$restRequest->setRequestPath("/api/patient/" . $uuid . "/encounter");
 $restRequest->setIsLocalApi(true);
 $restRequest->setApiType("oemr");
 // below will return as json

@@ -170,39 +170,55 @@ try {
             xhr_soap.open("GET", "get_encounters.php?uuid=" + uuid, false);
             xhr_soap.onreadystatechange = function () {
                 if (xhr_soap.readyState == 4 && xhr_soap.status == 200) {
-                    console.log(xhr_soap.responseText);
                     encounters = JSON.parse(xhr_soap.responseText);
                     encounters_ls = encounters.data
-                    console.log("len encounters: " + encounters_ls.length);
-                    console.log("encounters: " + encounters);
-                    console.log("encounters eid: " + encounters.data[0]['eid']);
                 }
             }
             xhr_soap.send();
 
             // make API request to get all the soap notes for a patient
-            var soaps = [];
-            console.log("before soap loop");
-            for (var i = 0; i < 1; i++) {
-                console.log("inside soap loop");
+            all_soaps = "";
+            for (var i = 0; i < encounters_ls.length; i++) {
                 var xhr_soap_note = new XMLHttpRequest();
                 var uri = "get_soap.php?pid=" + pid + "&eid=" + encounters.data[i]['eid'];
-                xhr_soap_note.open("GET", uri, true);
+                xhr_soap_note.open("GET", uri, false);
                 xhr_soap_note.onreadystatechange = function () {
                     if (xhr_soap_note.readyState == 4 && xhr_soap_note.status == 200) {
-                        console.log("this is a soap: " + xhr_soap_note.responseText);
-                        var soap = JSON.parse(xhr_soap_note.responseText);
-                        soaps.push(soap);
+                        console.log(+ xhr_soap_note.responseText);
+                        // var soap = JSON.parse(xhr_soap_note.responseText);
+                        all_soaps += xhr_soap_note.responseText;
                     }
                 }
                 xhr_soap_note.send();
             }
-            console.log("soaps: " + soaps);
+            console.log("soaps: " + all_soaps);
+            return all_soaps;
+        }
+
+        function call_gpt(messages) {
+            var apiKey = "<?php echo $_ENV['OPENAI_API_KEY']; ?>";
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://api.openai.com/v1/chat/completions", false);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Authorization", "Bearer " + apiKey);
+            var data = {
+                "messages": messages, // Send the entire messages array
+                "model": "gpt-3.5-turbo-0125",
+                "tools": tools,
+                // "tool_choice": {"type": "function", "function": {"name": "get_uuid_from_name"}}
+            };
+            var response = "";
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    response = JSON.parse(xhr.responseText);
+                }
+            }
+            xhr.send(JSON.stringify(data));
+            return response;
         }
 
         function submitMessage() {
             var apiKey = "<?php echo $_ENV['OPENAI_API_KEY']; ?>";
-
             var message = document.getElementById("message").value;
             var chatBox = document.getElementById("chat-box");
             chatBox.innerHTML += "<p><strong>You:</strong> " + message + "</p>";
@@ -214,57 +230,53 @@ try {
                 "content": message,
             });
 
-            // Make the API request
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "https://api.openai.com/v1/chat/completions", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("Authorization", "Bearer " + apiKey);
-            var data = {
-                "messages": messages, // Send the entire messages array
-                "model": "gpt-3.5-turbo-0125",
-                "tools": tools,
-                // "tool_choice": {"type": "function", "function": {"name": "get_uuid_from_name"}}
-            };
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    console.log(data);
-                    // if a function call was made
-                    if (data.choices[0].message.tool_calls) {
-                        tool_choice = data.choices[0].message.tool_calls[0].function.name;
-                        console.log("tool choice: " + tool_choice);
-                        if (tool_choice == "get_uuid_and_pid_from_name") {
-                            // parse the uuid from the function call response
-                            var uuid_serialised = data.choices[0].message.tool_calls[0].function['arguments'];
-                            var uuid_json = JSON.parse(uuid_serialised);
-                            var uuid = uuid_json.uuid;
+            // Call GPT API
+            gpt_response = call_gpt(messages);
 
-                            var pid_json = JSON.parse(uuid_serialised);
-                            var pid = pid_json.pid;
-                            console.log("uuid:" + uuid);
-                            console.log("pid:" + pid);
-                            soaps_from_uuid(uuid, pid);
-                        }
-                        else {
-                            console.log("tool choice not recognised");
-                        }
-                    }
-                    // if no function call was made
-                    else {
-                        // console.log("message" + myFunction());
-                        // Display the API response in the chat interface
-                        chatBox.innerHTML += "<p><strong>Reply:</strong> " + data.choices[0].message.content.trim() + "</p>";
+            // if a function call was made
+            if (gpt_response.choices[0].message.tool_calls) {
+                tool_choice = gpt_response.choices[0].message.tool_calls[0].function.name;
+                if (tool_choice == "get_uuid_and_pid_from_name") {
+                    // parse the uuid from the function call response
+                    var uuid_serialised = gpt_response.choices[0].message.tool_calls[0].function['arguments'];
+                    var uuid_json = JSON.parse(uuid_serialised);
+                    var uuid = uuid_json.uuid;
 
-                        // Add the assistant's response to the messages array
-                        messages.push({
-                        "role": "assistant",
-                        "content": data.choices[0].message.content.trim()
-                    });
-                    }
+                    var pid_json = JSON.parse(uuid_serialised);
+                    var pid = pid_json.pid;
+                    soaps = soaps_from_uuid(uuid, pid);
                 }
-            }
-            xhr.send(JSON.stringify(data));
+                else {
+                    console.log("tool choice not recognised");
+                }
 
+                // append results to messages
+                console.log("global soaps: " + soaps);
+                messages.push({
+                    "role": "assistant",
+                    "content": soaps
+                })
+                console.log(messages)
+
+                // make gpt call again with updated conversation history
+                gpt_response = call_gpt(messages);
+                console.log("final response: " + JSON.stringify(gpt_response));
+
+                // Display the API response in the chat interface
+                chatBox.innerHTML += "<p><strong>Reply:</strong> " + gpt_response.choices[0].message.content.trim() + "</p>";
+            }
+            // if no function call was made
+            else {
+                // console.log("message" + myFunction());
+                // Display the API response in the chat interface
+                chatBox.innerHTML += "<p><strong>Reply:</strong> " + gpt_response.choices[0].message.content.trim() + "</p>";
+
+                // Add the assistant's response to the messages array
+                messages.push({
+                "role": "assistant",
+                "content": gpt_response.choices[0].message.content.trim()
+            });
+            }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>

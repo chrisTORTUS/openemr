@@ -27,8 +27,9 @@ require_once(__DIR__ . "/../../../_rest_config.php");
 $gbl = RestConfig::GetInstance();
 $gbl::setNotRestCall();
 $restRequest = new HttpRestRequest($gbl, $_SERVER);
-$restRequest->setRequestMethod("GET");
-$restRequest->setRequestPath("/api/patient/" . $pid . "/encounter" . "/" . $eid . "/soap_note");
+// $restRequest->setRequestMethod("GET");
+$restRequest->setRequestPath("/api/patient/1/encounter/5/soap_note");
+// $restRequest->setRequestPath("/api/patient/9b7e3d50-26c2-4e40-9af3-7784ca46546c/encounter");
 $restRequest->setIsLocalApi(true);
 $restRequest->setApiType("oemr");
 // below will return as json

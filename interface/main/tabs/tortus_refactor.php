@@ -70,9 +70,10 @@ try {
 
     <script>
         // Initialize the messages array
+        var extra_instructions = "You are a ahelpful chatbot assisting a doctor in learning about a patient's information. You are provided with a function called retrieve_uuid_pid that takes in a patient's name and a JSON of many patient's information, and returns the uuid and pid of the target patient. Never use this tool when a patient's soap notes are already provided. Never use this tool when no name is present in the message."
         var messages = [{
             "role": "system",
-            "content": "JSON"
+            "content": "JSON." + extra_instructions
         }];
 
         var patient_list_info = "";
@@ -134,8 +135,8 @@ try {
         var tools = [{
         "type": "function",
         "function": {
-            "name": "get_uuid_and_pid_from_name",
-            "description": "Provided with the name of a patient and a JSON of many patient's information, return the uuid and pid of the target patient",
+            "name": "retrieve_uuid_pid",
+            "description": "Provided with the name of a patient and a JSON of many patient's information, return the uuid and pid of the target patient. Never use this tool when a patient's soap notes are already provided. Never use this tool when no name is present in the message.",
             "parameters": {
             "type": "object",
             "properties": {
@@ -203,7 +204,7 @@ try {
             xhr.setRequestHeader("Authorization", "Bearer " + apiKey);
             var data = {
                 "messages": messages, // Send the entire messages array
-                "model": "gpt-3.5-turbo-0125",
+                "model": "gpt-4-turbo-preview",
                 "tools": tools,
                 // "tool_choice": {"type": "function", "function": {"name": "get_uuid_from_name"}}
             };
@@ -236,7 +237,7 @@ try {
             // if a function call was made
             if (gpt_response.choices[0].message.tool_calls) {
                 tool_choice = gpt_response.choices[0].message.tool_calls[0].function.name;
-                if (tool_choice == "get_uuid_and_pid_from_name") {
+                if (tool_choice == "retrieve_uuid_pid") {
                     // parse the uuid from the function call response
                     var uuid_serialised = gpt_response.choices[0].message.tool_calls[0].function['arguments'];
                     var uuid_json = JSON.parse(uuid_serialised);
@@ -253,29 +254,37 @@ try {
                 // append results to messages
                 console.log("global soaps: " + soaps);
                 messages.push({
-                    "role": "assistant",
-                    "content": soaps
+                    "role": "user",
+                    "content": "All soap notes for the patient: \n\n" + soaps
                 })
+
+                // // append original user message to front of messages again
+                // messages.push({
+                // "role": "user",
+                // "content": message,
+                // });
+
                 console.log(messages)
 
-                // make gpt call again with updated conversation history
-                gpt_response = call_gpt(messages);
-                console.log("final response: " + JSON.stringify(gpt_response));
+                // // make gpt call again with updated conversation history
+                // gpt_response = call_gpt(messages);
+                // console.log("final response: " + JSON.stringify(gpt_response));
 
                 // Display the API response in the chat interface
-                chatBox.innerHTML += "<p><strong>Reply:</strong> " + gpt_response.choices[0].message.content.trim() + "</p>";
+                chatBox.innerHTML += "<p><strong>Osler:</strong>Patient information retrieved</p>";
             }
             // if no function call was made
             else {
                 // console.log("message" + myFunction());
                 // Display the API response in the chat interface
-                chatBox.innerHTML += "<p><strong>Reply:</strong> " + gpt_response.choices[0].message.content.trim() + "</p>";
+                chatBox.innerHTML += "<p><strong>Osler:</strong> " + gpt_response.choices[0].message.content.trim() + "</p>";
 
                 // Add the assistant's response to the messages array
                 messages.push({
                 "role": "assistant",
                 "content": gpt_response.choices[0].message.content.trim()
-            });
+                });
+                console.log(messages);
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }

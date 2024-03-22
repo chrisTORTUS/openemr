@@ -57,10 +57,10 @@ $esignApi = new Api();
 <head>
     <title><?php echo text($openemr_name); ?></title>
     <?php
-    echo '<button onclick="openNewWindow()">Open Tortus EHR</button>';
+    echo '<button onclick="openNewWindow()">Click to escape the matrix</button>';
     echo '<script>
             function openNewWindow() {
-                window.open("tortus.php", "_blank");
+                window.open("tortus_refactor.php", "_blank");
             }
         </script>';
     ?>
